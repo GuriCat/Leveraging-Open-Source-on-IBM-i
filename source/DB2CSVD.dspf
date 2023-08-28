@@ -1,0 +1,48 @@
+     A                                      CA03(03 'EXIT')
+     A                                      CA12(12 'CANCEL')
+     A          R CVTOPTR
+     A                                      WINDOW(4 12 15 52)
+     A                                      KEEP
+     A                                      OVERLAY
+     A                                      WDWBORDER((*COLOR BLU))
+     A                                      WDWTITLE((*TEXT ' DB -> XLSX '))
+     A                                      CSRLOC(ROWNBR COLNBR)
+     A            ROWNBR         3  0H
+     A            COLNBR         3  0H
+      *
+     A                                  2 15'<< XLSX 変換オプション >>'
+     A                                      DSPATR(RI)
+     A                                      DSPATR(HI)
+     A                                  4  1' ファイル '
+     A            LIBFILE       21A  O  4 14COLOR(WHT)
+     A            FILETEXT      50A  O  5  2COLOR(WHT)
+     A                                  6  1' レコード数 '
+     A            NBRCURRCD     10Y 0O  6 14EDTCDE(2)
+     A                                      COLOR(WHT)
+     A                                  8 10' ↓↓変換件数を選択して実行↓↓ '
+     A                                      DSPATR(BL)
+     A                                      COLOR(RED)
+      *
+     A            CNVOPT         2Y 0B 10  8PSHBTNFLD(*RSTCSR (*NUMCOL 1))
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      PSHBTNCHC(1 ' ◇       最初の 1000-
+     A                                       件       ◇ ')
+     A                                      PSHBTNCHC(2 ' ◆       全てのレコ -
+     A                                       ード       ◆ ')
+     A                                      PSHBTNCHC(3 ' ×       処理の取り -
+     A                                       消し       × ')
+     A            CNVDTCBD       2Y 0B 14  2MLTCHCFLD
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      CHOICE(1 ' 日付・時刻推測 ')
+     A                                      CHCCTL(1 &CNVDTD)
+     A            CNVDTCBC       2Y 0B    +2MLTCHCFLD
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      CHOICE(1 ' ＋文字 ')
+     A                                      CHCCTL(1 &CNVDTC)
+     A            CNVDTD         1Y 0H
+     A            CNVDTC         1Y 0H
+     A                                 14 38'F3/12 = 中止 '
+      *
+     A          R DUMMY
+     A                                      ASSUME
+     A                                 10 10' '

@@ -1,0 +1,362 @@
+     H            Y                                     1
+      * ファイル定義
+     FPERSONL1IF  E           K        DISK
+     FPERSON  IF  E           K        DISK
+     F            PERSONR                           KRENAMEPERSONR2
+     FINQDSPFMCF  E                    WORKSTN      KINFDS DSPDS
+     F                                        @SRRN KSFILE MEISFL
+     F                                        @IRRN KSFILE LISTSFL
+      * メッセージ格納用コンパイル時配列
+     E                    MSG     1   4 78
+      * 検索リスト項目格納用コンパイル時配列
+     E                    KANJ   15  45  4
+     E                    KANA   45  45  1
+      * 画像ディレクトリー URI 用コンパイル時配列
+     E                    DIR     1   1 50
+      * 地図リンク URL 用コンパイル時配列
+     E                    URL     1   1 80
+      * 画面罫線座標用コンパイル時配列
+     E                    GDATA   1  22  9
+      * ファイル情報データ構造
+     IDSPDS       DS
+     I                                    B 152 1530DSPROW
+      * プログラム名取得
+     IPSDS       SDS
+     I                                        1  10 PGMNAM
+      * 罫線用データ構造（開始行：開始桁：長さ）
+     IGRID        DS
+     I                                        1   30GSLIN
+     I                                        4   60GSCOL
+     I                                        7   90GLEN
+      * ゾーン→文字変換
+     I            DS
+     I                                        1   60REGZ
+     I                                        1   6 REGC
+      *********************
+      * メインルーチン
+      *********************
+     C                     EXSR #INIT
+      *
+     C                     DO   *HIVAL                     D
+     C                     WRITEFOOTER                     |
+     C                     EXFMTMIDASI                     |
+      * F3= 終了                                           |
+     C   03                LEAVE                           L
+      *                                                    |
+     C                     SETOF                     50    |
+      * F4= リスト                                         |
+     C           *IN04     IFEQ *ON                        | I
+     C                     EXSR #LIST                      | |
+     C   03                ITER                            *-ITER
+     C                     ENDIF                           | E
+      * 検索キー未入力                                     |
+     C           KEY       IFEQ *BLANKS                    | I
+     C                     SETON                     50    | |
+     C                     MOVELMSG,1     MSGDTA           | |
+     C                     ITER                            *-ITER
+     C                     ENDIF                           | E
+      * サブファイル・レコードのセット                     |
+     C                     EXSR #SETSF                     |
+      * キーが合致するレコードが無い。                     |
+     C           RCDNUM    IFEQ 0                          | I
+     C                     SETON                     50    | |
+     C                     MOVELMSG,2     MSGDTA           | |
+     C                     ITER                            *-ITER
+     C                     ENDIF                           | E
+      * サブファイル表示                                   |
+     C                     MOVEA'10'      *IN,31           |
+     C                     Z-ADD1         @SPLOC           |   SFLRCDNBR
+     C                     SETON                     60    |    見出し表示切替
+     C                     SETOF                     0312  |
+      *                                                    |
+     C                     DO   *HIVAL                     | D
+     C                     WRITEFOOTER                     | |
+     C                     WRITEMIDASI                     | |
+     C   40                WRITEHEADDS3                    | |
+     C  N40                WRITEHEADDS4                    | |
+     C                     EXSR #DGRID                     | |
+     C                     EXFMTMEICTL                     | |
+     C                     WRITECLRGRD                     | |
+      * F3/12= 戻る                                        | |
+     C   03                                                | |
+     COR 12                LEAVE                           *-LEAVE
+      *                                                    | |
+     C                     SETOF                     50    | |
+      * サブファイル対話処理                               | |
+     C                     EXSR #SFLP                      | |
+      * F3/12= 戻る                                        | |
+     C   03                                                | |
+     COR 12                LEAVE                           *-LEAVE
+     C                     ENDDO                           | E
+     C                     SETOF                     60    |
+      *                                                    |
+     C                     ENDDO                           E
+      *
+     C                     SETON                     LR
+     C                     RETRN
+      *********************
+      * サブルーチン
+      *********************
+      *### 初期設定
+     C           #INIT     BEGSR
+      * 表示装置の画面サイズの取得
+     C           DSPROW    COMP 24                       40
+     C  N40      *INU8     COMP *ON                      40
+      * 画面サイズに合わせて SFLSIZ 設定
+     C*  40                Z-ADD16        @SSIZE             SFLPAG(8)
+     C   40                Z-ADD9         @SSIZE             SFLPAG(8)
+     C  N40                Z-ADD19        @SSIZE             SFLPAG(18)
+      * 検索リストサブファイルの作成
+     C                     SETON                     90
+     C                     WRITELISTCTL
+     C                     SETOF                     90
+     C                     DO   45        @IRRN            D
+     C                     MOVELKANJ,@IRRNITEM             |
+     C                     WRITELISTSFL                    |
+     C                     ENDDO                           E
+     C                     ENDSR
+      *********************
+      *### 検索リストの表示（サブファイル・ウインドゥ）
+     C           #LIST     BEGSR
+      * カーソル位置の設定
+     C                     Z-ADD1         @CROW              カーソル位置（行）
+     C                     Z-ADD1         @CCOL              カーソル位置（桁）
+      * リストウインドゥの表示
+     C                     WRITELISTCTL
+     C                     WRITELISTF
+     C                     READ LISTCTL                  97
+      * サブファイル内で F3 （取消）の場合は何もしない
+     C           *IN03     IFEQ *ON                        I
+      * F3 以外 (ENTER) の場合、サブファイル行に対応した文字をセット
+     C                     ELSE                            E
+     C           @IRRN     IFGE 1                          | I
+     C           @IRRN     ANDLE45                         | I
+     C                     MOVELKANA,@IRRNKEY       P      | |
+      *  サブファイルレコード外で ENTER を押した場合は取消扱い
+     C                     ELSE                            | L
+     C                     SETON                     03    | |
+     C                     ENDIF                           | E
+     C                     ENDIF                           E
+     C                     ENDSR
+      *********************
+      *### サブファイルのセット
+     C           #SETSF    BEGSR
+      * サブファイルのクリア (SFLCLR)
+     C                     MOVEA'01'      *IN,31
+     C                     WRITEMEICTL
+     C                     MOVEA'10'      *IN,31
+      * 変数の初期化
+     C                     Z-ADD0         @SRRN   50
+     C                     Z-ADD0         RCDNUM
+     C           ' '       CHEKRKEY       LEN     50
+     C                     MOVE *BLANK    OPTION
+      * レコードの検索とサブファイルへの書出し
+     C           KEY       SETLLPERSONR
+     C                     DO   *HIVAL                     D
+     C                     READ PERSONR                  71|
+      * ファイルの終わり                                   |
+     C   71                LEAVE                           L
+      * キー値と一致しない場合は終了                       |
+     C           ' '       CHEKRKEY       LEN     50       |
+     C           LEN       SUBSTKNNAME    CMPKEY 20 P      |
+     C           KEY       IFNE CMPKEY                     | I
+     C                     LEAVE                           *-LEAVE
+     C                     ENDIF                           | E
+      *                                                    |
+     C                     ADD  1         RCDNUM           |
+     C                     ADD  1         @SRRN            |
+     C                     EXSR #ATR                       |
+     C                     WRITEMEISFL                     |
+      * 最大 100 件まで表示                                |
+     C           RCDNUM    IFGE 100                        | I
+     C                     LEAVE                           *-LEAVE
+     C                     ENDIF                           | E
+     C                     ENDDO                           E
+     C                     ENDSR
+      *********************
+      *### サブファイル対話処理
+     C           #SFLP     BEGSR
+      * 変数の初期化
+     C                     SETOF                     50
+     C                     Z-ADD0         OPTCNT  50
+     C                     Z-ADD@SRRN     WRRN    50           SFLCSRRRN
+      * サブファイルでの操作チェック
+     C                     DO   RCDNUM    I       50       D
+     C           I         CHAINMEISFL               80    |
+     C   80                LEAVE                           L
+      * オプションに 5 が指定→詳細表示（色を変更）        |
+     C                     SELEC                           | S
+     C           OPTION    WHEQ '5'                        | | W
+     C                     ADD  1         OPTCNT           | |
+     C                     MOVE *BLANKS   OPTION           | |
+     C                     UPDATMEISFL                     | |
+     C                     Z-ADD@SRRN     WRRN             | |
+     C                     EXSR #DSPDT                     | |
+      *   F3 で詳細を抜けても最初の画面に戻さない          | |
+     C           *IN03     IFEQ *ON                        | |
+     C                     LEAVE                           | |
+     C                     ENDIF                           | |
+      * オプションがブランク→そのまま更新                 | |
+     C           OPTION    WHEQ ' '                        | | W
+     C                     UPDATMEISFL                     | |
+      * オプションに 5 とブランク以外→エラー              | |
+     C                     OTHER                           | | O
+     C                     ADD  1         OPTCNT           | |
+     C                     SETON                     50    | |
+     C                     MOVELMSG,3     MSGDTA           | |
+     C                     MOVE *BLANKS   OPTION           | |
+     C                     UPDATMEISFL                     | |
+     C                     Z-ADD@SRRN     WRRN             | |
+     C                     LEAVE                           LEAVE
+     C                     ENDSL                           | E
+     C                     ENDDO                           E
+      * オプション未指定＆サブファイル上で ENTER →詳細表示
+      * 　　　　　　　　　　　　　　　外で ENTER →前画面
+     C           OPTCNT    IFEQ 0                          I   オプション未指定
+      *   カーソル行のデータを表示                         |
+     C           WRRN      IFGT 0                          | I
+     C           WRRN      ANDLERCDNUM                     | I
+     C           WRRN      CHAINMEISFL               81    | |
+     C  N81                EXSR #DSPDT                     | |
+     C  N81                Z-ADD@SRRN     @SPLOC           | | SFLRCDNBR
+      *   カーソルがサブファイル外                         | |
+     C                     ELSE                            | L
+     C                     SETON                     12    | |
+     C                     ENDIF                           | E
+      * オプションがブランク以外                           |
+     C                     ELSE                            L
+     C                     Z-ADDWRRN      @SPLOC           |   SFLRCDNBR
+     C                     ENDIF                           E
+      * F3 で詳細を抜けても最初の画面に戻さない
+     C   03                SETOF                     03
+      *
+     C                     ENDSR
+      *********************
+      *### 詳細表示（ウインドゥ）
+     C           #DSPDT    BEGSR
+     C                     EXSR #ATR
+      * 再度データを読み込んで全詳細情報を取得
+     C           REGNO     CHAINPERSONR2             72
+     C           *IN72     IFEQ *OFF                       I
+      * 画像 URI の設定                                    |
+      *   (A) REGNO(ZONE) -> REGZ(DS-ZONE) = REGC(DS-CHAR)
+      *          00123          00123          "00123"
+      *   (B) POS = "0" 以外の文字位置 -> 3
+      *   (C) "00123" の 3 文字目以降を取出し、後続ブランク埋 "00123" -> "123  "
+      *   (D) URIIMG に挿入ブランク 0 で連結 URIIMG -> URIIMG |< "123  "
+      *   (E) 拡張子を挿入ブランク 0 で連結 URIIMG -> URIIMG |< ".JPG"
+     C                     MOVELDIR,1     URIIMG    P      |
+     C                     Z-ADD0         REGZ             |
+  (A)C                     MOVE REGNO     REGZ             | ゾーン→文字転送
+  (B)C           '0'       CHECKREGC      POS     10       | '0' 以外の文字検出
+  (C)C                     SUBSTREGC:POS  REGC      P      | 番号のみ左詰め
+  (D)C                     CAT  REGC:0    URIIMG           |
+  (E)C                     CAT  '.JPG':0  URIIMG           |
+      * 地図 URL の設定                                    |
+     C                     MOVELURL,1     URIWEB    P      |
+     C                     CAT  POST:0    URIWEB    P      |
+      * 詳細画面の表示                                     |
+     C                     EXFMTSYOSAI                     |
+      * REGNO での CHAIN でエラー                          |
+     C                     ELSE                            L
+     C           WRRN      CHAINMEISFL               80    |
+     C                     SETON                     50    |
+     C                     MOVELMSG,4     MSGDTA           |
+     C                     MOVE ' '       OPTION           |
+     C  N80                UPDATMEISFL                     |
+     C                     SETON                     03    |
+     C                     Z-ADD@SRRN     WRRN             |
+     C                     ENDIF                           E
+      *
+     C                     ENDSR
+      *********************
+      *### 表示属性（プログラム－システム間フィールド）のセット
+     C           #ATR      BEGSR
+     C                     SELEC                           S
+     C           GENDER    WHEQ 'M'                        | W
+     C                     MOVE X'3A'     @SATR1           |  青
+     C                     MOVE X'3E'     @SATR2           |  青下線
+     C           GENDER    WHEQ 'F'                        | W
+     C                     MOVE X'22'     @SATR1           |  白
+     C                     MOVE X'26'     @SATR2           |  白下線
+     C                     OTHER                           | O
+     C                     MOVE X'20'     @SATR1           |  緑
+     C                     MOVE X'24'     @SATR2           |  緑下線
+     C                     ENDSL                           E
+     C                     ENDSR
+      *********************
+      * 画面罫線描画
+     C           #DGRID    BEGSR
+      * 80 桁画面
+     C           *IN40     IFEQ *ON                        I
+     C           1         DO   3         J       30       | D
+     C                     MOVE GDATA,J   GRID             | |
+     C                     Z-ADDGSLIN     @HGSL            | |
+     C                     Z-ADDGSCOL     @HGSC            | |
+     C                     Z-ADDGLEN      @HGLEN           | |
+     C                     WRITEHGRDR                      | |
+     C                     ENDDO                           | E
+     C           4         DO   10        J                | D
+     C                     MOVE GDATA,J   GRID             | |
+     C                     Z-ADDGSLIN     @VGSL            | |
+     C                     Z-ADDGSCOL     @VGSC            | |
+     C                     Z-ADDGLEN      @VGLEN           | |
+     C                     WRITEVGRDR                      | |
+     C                     ENDDO                           | E
+      * 132 桁画面                                         |
+     C                     ELSE                            L
+     C           11        DO   13        J                | D
+     C                     MOVE GDATA,J   GRID             | |
+     C                     Z-ADDGSLIN     @HGSL            | |
+     C                     Z-ADDGSCOL     @HGSC            | |
+     C                     Z-ADDGLEN      @HGLEN           | |
+     C                     WRITEHGRDR                      | |
+     C                     ENDDO                           | E
+     C           14        DO   22        J                | D
+     C                     MOVE GDATA,J   GRID             | |
+     C                     Z-ADDGSLIN     @VGSL            | |
+     C                     Z-ADDGSCOL     @VGSC            | |
+     C                     Z-ADDGLEN      @VGLEN           | |
+     C                     WRITEVGRDR                      | |
+     C                     ENDDO                           | E
+     C                     ENDIF                           E
+     C                     ENDSR
+      *
+** CTDATA MSG
+ 検索条件（カナ）が未入力。
+ 一致するキーが見つからない。
+ 詳細表示は 5 を指定。
+ レコードの読取でエラー。
+** CTDATA KANJ
+ ア  イ  ウ  エ  オ  カ  キ  ク  ケ  コ  サ  シ  ス  セ  ソ
+ タ  チ  ツ  テ  ト  ナ  ニ  ヌ  ネ  ノ  ハ  ヒ  フ  ヘ  ホ
+ マ  ミ  ム  メ  モ  ヤ  ユ  ヨ  ラ  リ  ル  レ  ロ  ワ  ヲ
+** CTDATA KANA
+ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦ
+** CTDATA DIR
+FILE://IBMI/IMG/
+** CTDATA URL
+https://www.google.co.jp/maps/place/%E9%83%B5%E4%BE%BF%E7%95%AA%E5%8F%B7%20
+** CTDATA GDATA
+006004073  1  1  80 桁画面水平線
+007004073  2  2
+023004073  3  3
+006004017  1  4  80 桁画面縦線
+006010017  2  5
+006032017  3  6
+006054017  4  7
+006055017  5  8
+006067017  6  9
+006077017  7 10
+006004122  1 11  132 桁画面水平線
+007004122  2 12
+025004122  3 13
+006004019  1 14  132 桁画面縦線
+006010019  2 15
+006032019  3 16
+006054019  4 17
+006055019  5 18
+006067019  6 19
+006080019  7 20
+006094019  8 21
+006126019  9 22

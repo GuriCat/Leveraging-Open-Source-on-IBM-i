@@ -1,0 +1,195 @@
+/* 下記のコマンドを実行して出口プログラムを登録                               +
+     ADDEXITPGM EXITPNT(QIBM_QSP_SPLF_LSTACT) FORMAT(LASP0100) PGMNBR(*LOW)   +
+     PGM(LMSE??LIB/SPL2PCD) PGMDTA(*JOB 1 ?)                                  +
+     ※ "?" はスプールファイル一覧から指定する文字                            +
+   詳細は下記 URL などを参照                                                  +
+     https://www-01.ibm.com/support/docview.wss?uid=nas8N1012369              +
+     https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_72/apis/        +
+             xsp_splf_list_act.htm                                            */
+
+             PGM        PARM(&EXIT_NAME &FORMAT &ACTION &SPLID +
+                          &SPLIDLEN)
+
+             DCL        VAR(&EXIT_NAME) TYPE(*CHAR) LEN(20)
+             DCL        VAR(&FORMAT) TYPE(*CHAR) LEN(8)
+             DCL        VAR(&ACTION) TYPE(*CHAR) LEN(1)
+             DCL        VAR(&SPLID) TYPE(*CHAR) LEN(82)
+             DCL        VAR(&JOB_NAME) TYPE(*CHAR) STG(*DEFINED) +
+                          LEN(10) DEFVAR(&SPLID 1)
+             DCL        VAR(&USER_NAME) TYPE(*CHAR) STG(*DEFINED) +
+                          LEN(10) DEFVAR(&SPLID 11)
+             DCL        VAR(&JOB_NUMBER) TYPE(*CHAR) STG(*DEFINED) +
+                          LEN(6) DEFVAR(&SPLID 21)
+             DCL        VAR(&SPLF_NAME) TYPE(*CHAR) STG(*DEFINED) +
+                          LEN(10) DEFVAR(&SPLID 27)
+             DCL        VAR(&SPLF_NBR) TYPE(*INT) STG(*DEFINED) +
+                          DEFVAR(&SPLID 37)
+             DCL        VAR(&FILLER) TYPE(*CHAR) STG(*DEFINED) +
+                          LEN(41) DEFVAR(&SPLID 41)
+             DCL        VAR(&SPLIDLEN) TYPE(*INT)
+
+             DCL        VAR(&JOBCCSID) TYPE(*DEC) LEN(5 0)
+             DCL        VAR(&DBFCCSID) TYPE(*DEC) LEN(5 0)
+             DCL        VAR(&DATETIME) TYPE(*CHAR) LEN(20)
+             DCL        VAR(&PCDPATH) TYPE(*CHAR) LEN(500)
+
+             DCL        VAR(&POS) TYPE(*UINT)
+             DCL        VAR(&PATHSEP) TYPE(*CHAR) LEN(1)
+             DCL        VAR(&SEP) TYPE(*CHAR) LEN(1) VALUE(X'B2')
+
+             /***********************************************************/
+             /* 一時 PC ファイルの保管場所を指定                             +
+                あらかじめ MKDIR コマンドでディレクトリーを作成しておくこと  +
+                例： MKDIR DIR('/TMP/LMSExx')                                */
+             DCL        VAR(&TOOLPATH) TYPE(*CHAR) LEN(64) +
+                          VALUE('/TMP/LMSEXX/')
+             /***********************************************************/
+             /* NetServer のホスト名または IP アドレスに置き換え */
+             DCL        VAR(&HOST) TYPE(*CHAR) LEN(64) +
+                          VALUE('IBMI')
+             /***********************************************************/
+             /* LMSExxLIB に置き換え */
+             DCL        VAR(&PGMLIB) TYPE(*CHAR) LEN(10) VALUE(LMSExxLIB)
+
+             MONMSG     MSGID(CPF0000 CPD0000 MCH0000) EXEC(GOTO +
+                          CMDLBL(ERROR))
+
+             IF         COND(&EXIT_NAME *NE 'QIBM_QSP_SPLF_LSTACT') +
+                          THEN(GOTO CMDLBL(EXIT))
+             IF         COND(&FORMAT *NE 'LASP0100') THEN(GOTO +
+                          CMDLBL(EXIT))
+
+             /* PC ファイルのパスを設定 */
+             RTVJOBA    CCSID(&JOBCCSID) DATETIME(&DATETIME)
+             CHGVAR     VAR(&PCDPATH) VALUE(&TOOLPATH |< &JOB_NAME +
+                          |< '_' |< &USER_NAME |< '_' |< &SPLF_NAME +
+                          |< '_' |< &DATETIME)
+
+             /***********************************************************/
+             /* ADDEXITPGM の「プログラム・データ」に指定した値に基づく処理  */
+
+             /*   スプール→テキスト  */
+             IF         COND(&ACTION = 'T') THEN(CALLSUBR +
+                          SUBR(#SPL2TXT))
+
+             /*   スプール→ PDF */
+             IF         COND(&ACTION = 'P') THEN(CALLSUBR +
+                          SUBR(#SPL2PDF))
+
+             SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' スプールの変換が終了しました。 ') +
+                          MSGTYPE(*COMP)
+             CHGJOB     CCSID(&JOBCCSID)
+
+             STRPCO     PCTA(*NO)
+             MONMSG     MSGID(IWS0000)
+             /* "/" をパス区切り文字に置き換え */
+             CALLSUBR   SUBR(#RPLSEP)
+
+             IF         COND(&JOBCCSID = 5026 *OR &JOBCCSID = 65535) +
+                          THEN(CHGJOB CCSID(5026))
+             ELSE       CMD(CHGJOB CCSID(5035))
+             STRPCCMD   PCCMD('START' |> &SEP || &SEP |< &HOST |< +
+                          &PCDPATH) PAUSE(*NO)
+             GOTO       CMDLBL(CLEANUP)
+
+ ERROR:      SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' スプールの PDF 変換でエラーが発生 +
+                           しました。詳細はジョブログを参照してくだ +
+                           さい。 ') MSGTYPE(*ESCAPE)
+
+ CLEANUP:    CHGJOB     CCSID(&JOBCCSID)
+             MONMSG     MSGID(CPF0000)
+             GOTO       CMDLBL(EXIT)
+
+             /***********************************************************/
+
+             /* サブルーチン： SPL->TXT 変換 ****************************/
+             SUBR       SUBR(#SPL2TXT)
+
+             SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' スプールをテキストに変換中 ...') +
+                          TOPGMQ(*EXT) MSGTYPE(*STATUS)
+
+             /* スプールをテキストに変換                     +
+                RCDLEN(300) →シフト文字の補填（追加）分を確保 */
+             CRTPF      FILE(QTEMP/SPL2TXTTMP) RCDLEN(300) +
+                          IGCDTA(*YES) SIZE(*NOMAX)
+             MONMSG     MSGID(CPF0000)
+
+             CPYSPLF    FILE(&SPLF_NAME) TOFILE(QTEMP/SPL2TXTTMP) +
+                          JOB(&JOB_NUMBER/&USER_NAME/&JOB_NAME) +
+                          SPLNBR(&SPLF_NBR)
+
+             /* シフト文字にブランク補填 (PC 転送桁ずれ防止 ) */
+             OVRDBF     FILE(SPLF) TOFILE(QTEMP/SPL2TXTTMP) +
+                          OVRSCOPE(*JOB)
+             CALL       PGM(&PGMLIB/SHIFT)
+             DLTOVR     FILE(SPLF) LVL(*JOB)
+
+             /* スプールをテキストに変換 */
+             CHGVAR     VAR(&PCDPATH) VALUE(&PCDPATH |< '.TXT')
+             /* EBCDIC CCSID の設定 */
+             IF         COND(&JOBCCSID = 5026 *OR &JOBCCSID = 65535) +
+                          THEN(CHGVAR VAR(&DBFCCSID) VALUE(5026))
+             IF         COND(&JOBCCSID = 5035 *OR &JOBCCSID = 1399) +
+                          THEN(CHGVAR VAR(&DBFCCSID) VALUE(&JOBCCSID))
+
+             /* STMFCCSID(1208) -> utf-8, STMFCCSID(943) -> Shift-JIS */
+             CPYTOSTMF  +
+                          FROMMBR('/QSYS.LIB/QTEMP.LIB/SPL2TXTTMP.FIL+
+                          E/SPL2TXTTMP.MBR') TOSTMF(&PCDPATH) +
+                          STMFOPT(*REPLACE) DBFCCSID(&DBFCCSID) +
+                          STMFCCSID(1208) ENDLINFMT(*CRLF)
+
+             ENDSUBR
+
+             /* サブルーチン： SPL->PDF 変換 ****************************/
+             SUBR       SUBR(#SPL2PDF)
+
+             SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' スプールを PDF に変換中 ...') +
+                          TOPGMQ(*EXT) MSGTYPE(*STATUS)
+
+             /* スプール再生成のために FCFC 付きで PF にコピー          +
+                CPYSPLF 出力ファイル長は、 DBCS の場合、                +
+                FCFC 文字 (1) ＋空白 (1) ＋最大印刷桁数 (198) ＝ 200    */
+             CRTPF      FILE(QTEMP/SPL2PDFTMP) RCDLEN(200) +
+                          IGCDTA(*YES) SIZE(*NOMAX)
+             MONMSG     MSGID(CPF0000)
+             CPYSPLF    FILE(&SPLF_NAME) TOFILE(QTEMP/SPL2PDFTMP) +
+                          JOB(&JOB_NUMBER/&USER_NAME/&JOB_NAME) +
+                          SPLNBR(&SPLF_NBR) CTLCHAR(*FCFC)
+
+             /* PDF 作成パラメーターの設定 */
+             CHGVAR     VAR(&PCDPATH) VALUE(&PCDPATH |< '.PDF')
+             /* DBCS( 漢字 ) を明朝で印字する場合は、 +
+                IGCCDEFNT パラメーターの X0G24F を X0M24F に変更 */
+             /* CCSID 5035/1399 の英小文字を印字する場合は、 +
+                FNTCHRSET パラメータの T1000290 を T1001027 に変更 */
+             OVRPRTF    FILE(QPRINT) DEVTYPE(*AFPDS) PAGESIZE(21.0 +
+                          29.7 *UOM) LPI(9) FRONTMGN(1.0 1.0) +
+                          CTLCHAR(*FCFC) FNTCHRSET(QFNTCPL/C0L0KN20 +
+                          QFNTCPL/T1000290) UOM(*CM) IGCDTA(*YES) +
+                          IGCCDEFNT(QFNT61/X0G24F) TOSTMF(&PCDPATH) +
+                          WSCST(QSYS/QCTXPDF2) OVRSCOPE(*JOB)
+
+             /* スプールを PDF に変換 */
+             CPYF       FROMFILE(QTEMP/SPL2PDFTMP) TOFILE(QPRINT)
+             DLTOVR     FILE(QPRINT) LVL(*JOB)
+
+             ENDSUBR
+
+             /* サブルーチン：パス区切り文字 "/" の置き換え **************/
+             SUBR       SUBR(#RPLSEP)
+
+               DOFOR      VAR(&POS) FROM(1) TO(500)
+                 CHGVAR     VAR(&PATHSEP) VALUE(%SST(&PCDPATH &POS 1))
+                 IF         COND(&PATHSEP = ' ') THEN(LEAVE)
+                 IF         COND(&PATHSEP = '/') THEN(CHGVAR +
+                              VAR(%SST(&PCDPATH &POS 1)) VALUE(&SEP))
+               ENDDO
+
+             ENDSUBR
+
+ EXIT:       ENDPGM

@@ -1,0 +1,134 @@
+     A                                      DSPSIZ(24 80 *DS3)
+     A          R R1
+     A                                  3  2'16 進　設定 '
+     A                                      COLOR(WHT)
+     A                                  3 40'16 進　設定 '
+     A                                      COLOR(WHT)
+     A                                  5  4'20'
+     A                                  5  7' 緑：（通常）　　　　　　　　　 '
+     A                                  5 42'30'
+     A                                  5 45' 空：桁区切　　　　　　　　　　 '
+     A                                      DSPATR(CS)
+     A                                  6  4'21'
+     A                                  6  7' 緑：　　　　反転　　　　　　　 '
+     A                                      DSPATR(RI)
+     A                                  6 42'31'
+     A                                  6 45' 空：桁区切　反転　　　　　　　 '
+     A                                      DSPATR(RI)
+     A                                      DSPATR(CS)
+     A                                  7  4'22'
+     A                                  7  7' 白：高輝度　　　　　　　　　　 '
+     A                                      DSPATR(HI)
+     A                                  7 42'32'
+     A                                  7 45' 黄：桁区切　　　　高輝度　　　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(CS)
+     A                                  8  4'23'
+     A                                  8  7' 白：高輝度　反転　　　　　　　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                  8 42'33'
+     A                                  8 45' 黄：桁区切　反転　高輝度　　　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                      DSPATR(CS)
+     A                                  9  4'24'
+     A                                  9  7' 緑：　　　　　　　下線　　　　 '
+     A                                      DSPATR(UL)
+     A                                  9 42'34'
+     A                                  9 45' 空：桁区切　　　　　　　　下線 '
+     A                                      DSPATR(UL)
+     A                                      DSPATR(CS)
+     A                                 10  4'25'
+     A                                 10  7' 緑：　　　　反転　下線　　　　 '
+     A                                      DSPATR(UL)
+     A                                      DSPATR(RI)
+     A                                 10 42'35'
+     A                                 10 45' 空：桁区切　反転　　　　　下線 '
+     A                                      DSPATR(UL)
+     A                                      DSPATR(RI)
+     A                                      DSPATR(CS)
+     A                                 11  4'26'
+     A                                 11  7' 白：高輝度　　　　下線　　　　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A                                 11 42'36'
+     A                                 11 45' 黄：桁区切　　　　高輝度　下線 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(UL)
+     A                                      DSPATR(CS)
+     A                                 12  4'27'
+     A                                 12  7' （非表示）　　　　　　　　　　 '
+     A                                 12 42'37'
+     A                                 12 45' （非表示）　　　　　　　　　　 '
+     A                                 13  4'28'
+     A                                 13  7' 赤：　　　　　　　　　　明滅　 '
+     A                                      DSPATR(BL)
+     A                                 13 42'38'
+     A                                 13 45' 桃：桁区切　　　　　　　　明滅 '
+     A                                      DSPATR(BL)
+     A                                      DSPATR(CS)
+     A                                 14  4'29'
+     A                                 14  7' 赤：　　　　反転　　　　明滅　 '
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                 14 42'39'
+     A                                 14 45' 桃：桁区切　反転　　　　　明滅 '
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(CS)
+     A                                 15  4'2A'
+     A                                 15  7' 赤：高輝度　　　　　　　明滅　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(BL)
+     A                                 15 42'3A'
+     A                                 15 45' 青：桁区切　　　　高輝度　明滅 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(CS)
+     A                                 16  4'2B'
+     A                                 16  7' 赤：高輝度　反転　　　　明滅　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                 16 42'3B'
+     A                                 16 45' 青：桁区切　反転　高輝度　明滅 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(CS)
+     A                                 17  4'2C'
+     A                                 17  7' 赤：　　　　　　　下線　明滅　 '
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                 17 42'3C'
+     A                                 17 45' 桃：桁区切　　　　下線　　明滅 '
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                      DSPATR(CS)
+     A                                 18  4'2D'
+     A                                 18  7' 赤：　　　　反転　下線　明滅　 '
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                 18 42'3D'
+     A                                 18 45' 桃：桁区切　反転　下線　　明滅 '
+     A                                      DSPATR(RI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                      DSPATR(CS)
+     A                                 19  4'2E'
+     A                                 19  7' 赤：高輝度　　　　下線　明滅　 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                 19 42'3E'
+     A                                 19 45' 青：桁区切　下線　高輝度　明滅 '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(BL)
+     A                                      DSPATR(UL)
+     A                                      DSPATR(CS)
+     A                                 20  4'2F'
+     A                                 20  7' （非表示）　　　　　　　　　　 '
+     A                                 20 42'3F'
+     A                                 20 45' （非表示）　　　　　　　　　　 '

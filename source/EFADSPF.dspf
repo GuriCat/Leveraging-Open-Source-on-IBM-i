@@ -1,0 +1,113 @@
+     A* ファイルレベル・キーワード
+     A                                      REF(*LIBL/PERSON)
+     A                                      INDARA
+     A                                      ALTPAGEUP(CF07)
+     A                                      ALTPAGEDWN(CF08)
+     A*                                     ENTFLDATR((*DSPATR RI))
+     A* レコード定義
+     A          R DSPFR
+     A                                      CA03(03 ' 終了 ')
+     A  41                                  CF09(09 ' 追加 ')
+     A  41                                  CA11(11 ' 初期画面 ')
+     A  41 60
+     AO 43                                  CA23(23 ' 削除 ')
+     A  41                                  PAGEUP(07 ' 前ページ ')
+     A  41                                  PAGEDOWN(08 ' 次ページ ')
+     A                                      CHANGE(30 ' 変更有り ')
+     A* データ表示・入力
+     A                                  1  2'DSPF3'
+     A            PGMNAM        10A  O  1  8COLOR(WHT)
+     A                                  1 63DATE
+     A                                      EDTCDE(Y)
+     A                                  1 72TIME
+     A                                  3 31' ＊登録者情報更新＊ '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                  3 60' 更新 :'
+     A  41                                  COLOR(BLU)
+     A            UPDNUM         5Y 0O  3 69EDTCDE(1)
+     A  41                                  COLOR(BLU)
+     A                                  4 60' 追加 :'
+     A  42                                  COLOR(PNK)
+     A            ADDNUM         5Y 0O  4 69EDTCDE(1)
+     A  42                                  COLOR(PNK)
+     A                                  5 60' 削除 :'
+     A  43                                  COLOR(RED)
+     A            DLTNUM         5Y 0O  5 69EDTCDE(1)
+     A  43                                  COLOR(RED)
+     A*
+     A                                  6 18' 登録番号       :'
+     A            REGNO     R        B  6 36EDTCDE(4)
+     A  61                                  DSPATR(PR)
+     A  50
+     AO 61                                  DSPATR(RI)
+     A*
+     A  60                              8 18' 姓名           :'
+     A  60        KJNAME    R        B  8 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                              9 18' 姓名（読み）   :'
+     A  60        KNNAME    R     W  B  9 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             10 18' 性別 (M/F/X)   :'
+     A  60        GENDER    R        B 10 36VALUES('M' 'F' 'X')
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             11 18' 電話番号（主） :'
+     A  60        TEL       R        B 11 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             12 18' 電話番号（副） :'
+     A  60        MOBILE    R        B 12 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             13 18' 郵便番号       :'
+     A  60        POST      R        B 13 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             14 18' 住所１         :'
+     A  60        ADDR1     R        B 14 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             15 18' 住所２         :'
+     A  60        ADDR2     R        B 15 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             16 18' 住所３         :'
+     A  60        ADDR3     R        B 16 36
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A*
+     A  60                             17 18' 生年月日       :'
+     A  60        BIRTHD    R        B 17 36EDTWRD('0    /  /  ')
+     A                                      EDTMSK('    &  &  ')
+     A  61                                  DSPATR(RI)
+     A  61                                  DSPATR(PR)
+     A* 機能キーガイド
+     A                                 23  2'F3= 終了 '
+     A                                      COLOR(BLU)
+     A  41                             23 13'F7= 前 '
+     A                                      COLOR(BLU)
+     A  42                             23 13'ENTER= 追加 '
+     A                                      COLOR(BLU)
+     A  41                             23 22'F8= 次 '
+     A                                      COLOR(BLU)
+     A  41                             23 31'F9= 挿入 '
+     A                                      COLOR(BLU)
+     A  41 60                          23 42'F11= 初期画面 '
+     A                                      COLOR(BLU)
+     A  41 60
+     AO 43 60                          23 58'F23= 削除 '
+     A                                      COLOR(BLU)
+     A  50
+     AO 51        MSGDTA        78O  O 24  2DSPATR(HI)
+     A  50                                  COLOR(RED)

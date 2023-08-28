@@ -1,0 +1,30 @@
+      * > CRTDSPF GRDDSPF MISC DFRWRT(*NO)
+      *
+      * GRID LINE (HORIZONTAL)
+     A          R HGRDR                     GRDRCD
+     A                                      GRDLIN( +
+     A                                      (*POS (&HGRDSTRLIN +
+     A                                             &HGRDSTRCOL +
+     A                                             &HGRDLEN)) +
+     A                                      (*TYPE UPPER))
+     A            HGRDSTRLIN     3S 0P
+     A            HGRDSTRCOL     3S 0P
+     A            HGRDLEN        3S 0P
+      *
+      ******************************************
+      * GRID LINE (VIRTICAL)
+     A          R VGRDR                     GRDRCD
+     A                                      GRDLIN( +
+     A                                      (*POS (&VGRDSTRLIN +
+     A                                             &VGRDSTRCOL +
+     A                                             &VGRDLEN)) +
+     A                                      (*TYPE LEFT))
+     A            VGRDSTRLIN     3S 0P
+     A            VGRDSTRCOL     3S 0P
+     A            VGRDLEN        3S 0P
+      *
+      ******************************************
+      * GRID LINE (CLEAR GRID)
+     A          R CLRGRD                    GRDRCD
+     A                                      GRDCLR
+     A                                      FRCDTA

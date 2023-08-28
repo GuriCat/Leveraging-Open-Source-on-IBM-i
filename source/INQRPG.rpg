@@ -1,0 +1,143 @@
+     H            Y                                     1
+      * ファイル定義
+     FPERSONL1IF  E           K        DISK
+     FPERSON  IF  E           K        DISK
+     F            PERSONR                           KRENAMEPERSONR2
+     FINQDSPF CF  E                    WORKSTN
+     F                                        SFLRRNKSFILE MEISFL
+     F                                              KINFDS WSDS
+      * メッセージ格納用コンパイル時配列
+     E                    MSG     1   4 78
+      * ファイル情報データ構造
+     IWSDS        DS
+     I                                    B 378 3790TOPRRN
+      * プログラム名取得
+     IPSDS       SDS
+     I                                        1  10 PGMNAM
+      *********************
+      * メインルーチン
+      *********************
+      *
+     C                     DO   *HIVAL                       D
+     C                     WRITEMIDASIF                      |
+     C                     EXFMTMIDASI                       |
+     C                     SETOF                     50      |
+      * F3= 終了                                             |
+     C   03                LEAVE                             L
+      * 検索キー未入力                                       |
+     C           KEY       IFEQ *BLANKS                      | I
+     C                     SETON                     50      | |
+     C                     MOVELMSG,1     MSGDTA             | |
+     C                     ITER                              *-ITER
+     C                     ENDIF                             | E
+      * サブファイル・レコードのセット                       |
+     C                     EXSR #SETSF                       |
+      * キーが合致するレコードが無い。                       |
+     C           RCDNUM    IFEQ 0                            | I
+     C                     SETON                     50      | |
+     C                     MOVELMSG,2     MSGDTA             | |
+     C                     ITER                              *-ITER
+     C                     ENDIF                             | E
+      * サブファイル表示                                     |
+     C                     MOVEA'101'     *IN,31             |
+     C                     Z-ADD1         DSPREC             |
+     C                     SETON                     60      |
+     C                     DO   *HIVAL                       | D
+     C                     WRITEMEISAIF                      | |
+     C                     WRITEMIDASI                       | |
+     C                     WRITEMEIHEAD                      | |
+     C                     EXFMTMEICTL                       | |
+     C                     Z-ADD1         DSPREC             | |
+     C                     SETOF                     50      | |
+      * F3= 戻る                                             | |
+     C   03                LEAVE                             *-LEAVE
+      * レコード明細表示                                     | |
+     C                     EXSR #DSPDT                       | |
+     C                     ENDDO                             | E
+     C                     SETOF                     60      |
+      *                                                      |
+     C                     ENDDO                             E
+      *
+     C                     SETON                     LR
+     C                     RETRN
+      *********************
+      * サブルーチン
+      *********************
+      *### サブファイルのセット
+     C           #SETSF    BEGSR
+      * サブファイルのクリア (SFLCLR)
+     C                     MOVEA'010'     *IN,31
+     C                     WRITEMEICTL
+     C                     MOVEA'100'     *IN,31
+      * 変数の初期化
+     C                     Z-ADD0         SFLRRN  40
+     C                     Z-ADD0         RCDNUM
+     C           ' '       CHEKRKEY       LEN     50
+     C                     MOVE *BLANK    OPTION
+      * レコードの検索とサブファイルへの書出し
+     C           KEY       SETLLPERSONR
+     C                     DO   *HIVAL                       D
+     C                     READ PERSONR                  71  |
+      * ファイルの終わり                                     |
+     C   71                LEAVE                             L
+      * 入力キーとレコード値の比較→先頭一致の場合は書出し   |
+     C           LEN       SUBSTKNNAME    CMPKEY 20 P        |
+     C           KEY       IFEQ CMPKEY                       | I
+     C                     ADD  1         RCDNUM             | |
+     C                     ADD  1         SFLRRN             | |
+     C                     WRITEMEISFL                       | |
+     C                     ELSE                              | L
+     C                     LEAVE                             *-LEAVE
+     C                     ENDIF                             | E
+     C                     ENDDO                             E
+     C                     ENDSR
+      *### レコード明細表示
+     C           #DSPDT    BEGSR
+      * 標識 39(SFLNXTCHG) をオン
+     C                     SETON                     39
+      * サブファイルの表示ページを表示中ページに指定
+     C                     Z-ADDTOPRRN    DSPREC
+     C                     DO   *HIVAL                       D
+      * 変更のあったサブファイルレコードの読み込み           |
+     C                     READCMEISFL                   80  |
+     C   80                LEAVE                             L
+      * オプショに 5 が指定されていた場合の処理              |
+     C           OPTION    IFEQ '5'                          | I
+      * オプションのクリア                                   | |
+     C                     MOVE *BLANK    OPTION             | |
+     C                     UPDATMEISFL                       | |
+      * レコードの再読み込みと詳細画面の表示                 | |
+     C           REGNO     CHAINPERSONR2             81      | |
+     C           *IN81     IFEQ *OFF                         | | I
+     C                     EXFMTSYOSAI                       | | |
+     C                     ELSE                              | | L
+     C                     SETON                     50      | | |
+     C                     MOVELMSG,4     MSGDTA             | | |
+      * エラーのあるサブファイルページを表示                 | | |
+     C                     Z-ADDSFLRRN    DSPREC             | | |
+     C                     LEAVE                             *---LEAVE
+     C                     ENDIF                             | | E
+     C                     ELSE                              | L
+      * オプションに 5 以外の場合→ブランクはクリア、以外はエラー
+     C           OPTION    IFEQ ' '                          | | I
+     C                     SETOF                     50      | | |
+     C                     UPDATMEISFL                       | | |
+     C                     ELSE                              | | L
+     C                     SETON                     50      | | |
+     C                     MOVELMSG,3     MSGDTA             | | |
+     C                     MOVE ' '       OPTION             | | |
+     C                     UPDATMEISFL                       | | |
+      * エラーのあるサブファイルページを表示                 | | |
+     C                     Z-ADDSFLRRN    DSPREC             | | |
+     C                     LEAVE                             *---LEAVE
+     C                     ENDIF                             | | E
+     C                     ENDIF                             | E
+     C                     ENDDO                             E
+      * 標識 39(SFLNXTCHG) をオフ
+     C                     SETOF                     39
+     C                     ENDSR
+**
+ 登録者名（読み）が未入力。
+ 一致するキーが見つからない。
+ 詳細表示は 5 を指定。
+ レコードの読取でエラー。

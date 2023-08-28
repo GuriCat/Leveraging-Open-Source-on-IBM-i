@@ -1,0 +1,559 @@
+      **************************************************************************
+      * DDS ヘルプ・レコードを使用する場合、 RSTDSP(*YES) を指定。
+      **************************************
+      * ファイルレベル・キーワード
+     A                                      DSPSIZ(27 132 *DS4 24 80 *DS3)
+     A                                      REF(*LIBL/PERSON)
+     A                                      PRINT
+     A                                      INDARA
+     A                                      ALTHELP
+     A                                      HELP
+     A                                      ALTPAGEUP(CF07)
+     A                                      ALTPAGEDWN(CF08)
+      **************************************************************************
+      * ウインドゥ表示時に前の画面を消去しないためのダミーレコード
+     A          R DUMMY                     ASSUME
+     A                                      KEEP
+     A                                  1  2' '
+      **************************************************************************
+      * 見出し（検索キー入力）レコード
+     A          R MIDASI
+      *
+     A  40                                  DSPMOD(*DS3) 
+     A                                      CHGINPDFT
+     A                                      OVERLAY
+     A                                      CA03(03 ' 終了 ')
+     A                                      CF04(04 ' リスト ')
+      * H 仕様の DDS 内の位置はレコード・レベル・キーワードの後で、該当のレコー
+      * ドの最初のフィールドの前
+     A          H                           HLPARA(*RCD)
+     A                                      HLPRCD(HLPM1)
+     A                                      HLPBDY
+      *
+     A                                  1  2'INQDSPFM'
+     A            PGMNAM        10A  O    +1COLOR(WHT)
+      *
+     A                                  1115DATE
+     A  *DS3                            1 63
+      *
+     A                                      EDTCDE(Y)
+     A                                  1124TIME
+     A  *DS3                            1 72
+      *
+     A                                  2 58' ＊＊登録者検索＊＊ '
+     A  *DS3                            2 32
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A N60                              4  4' 姓名（カナ）を入力 '
+     A  60                              4  1' ↓ ''5'': 詳細 '
+     A                                      COLOR(WHT)
+     A  60                              4 16' 読み :'
+     A                                      COLOR(WHT)
+      *
+     A            KEY       R     W  B  4 26REFFLD(KNNAME)
+     A  60                                  COLOR(PNK)
+     A  60                                  DSPATR(PR CS)
+     A N60                                  DSPATR(UL)
+      *
+     A N60        PLIST          2Y 0B    +1PSHBTNFLD
+     A                                      PSHBTNCHC(1 '+' CF04)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  60                              4 52' 表示レコード数 '
+     A                                      COLOR(WHT)
+     A  60        RCDNUM         4Y 0O  4 70EDTCDE(J)
+     A                                      COLOR(PNK)
+      **************************************************************************
+      * 検索キーリスト（サブファイル・ウインドゥ）
+     A          R LISTSFL                   SFL
+     A            DMYIN          1   B  1  1DSPATR(ND) CHGINPDFT
+     A            ITEM           4O  B    +1DSPATR(PR UL)
+      **************************************
+     A          R LISTCTL
+     A* 40                                  DSPMOD(*DS3) 
+     A                                      SFLCTL(LISTSFL)
+     A                                      SFLSIZ(11)
+     A                                      SFLPAG(10)
+     A                                      WINDOW(5 26 11 10 *NOMSGLIN)
+     A                                      OVERLAY
+     A                                      CA03(03 ' 取消 ')
+     A                                      SFLCSRRRN(&@IRRN)
+     A N90                                  SFLDSP SFLDSPCTL
+     A  90                                  SFLCLR
+     A  99                                  SFLEND(*SCRBAR)
+      *
+     A            @IRRN          5S 0H
+      **************************************
+      * 検索キーワードリストのフッター（サブファイル・ウインドゥ）
+     A          R LISTF
+     A* 40                                  DSPMOD(*DS3)
+     A                                      WINDOW(LISTCTL)
+     A                                      CA03(03 ' 取消 ')
+     A                                      CSRLOC(@CROW @CCOL)
+     A                                      OVERLAY
+     A                                      MOUBTN(*ULD ENTER)
+     A            @CROW          3S 0H
+     A            @CCOL          3S 0H
+      *
+     A            PEXIT          2Y 0B 11  2PSHBTNFLD
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      PSHBTNCHC(1 ' 取消 ' CA03)
+      **************************************************************************
+      * サブファイル・ヘッダー・レコード
+     A          R HEADDS3
+     A* 40                                  DSPMOD(*DS3)
+     A                                      OVERLAY
+     A                                  6  4'  NO   姓名          -
+     A                                              読み            -
+     A                                           S 生年月日    都道府県 '
+     A                                      COLOR(WHT) DSPATR(RI)
+      **************************************
+     A          R HEADDS4
+     A                                      OVERLAY
+     A                                  6  4'  NO   姓名          -
+     A                                              読み            -
+     A                                           S 生年月日    都道府県    -
+     A                                       電話番号      住所            -
+     A                                                     '
+     A                                      COLOR(WHT) DSPATR(RI)
+      **************************************************************************
+      * サブファイル・レコード
+     A          R MEISFL                    SFL
+     A            @SATR1         1A  P
+     A            @DBRRN        10S 0H
+     A            OPTION         1A  B  7  2
+     A  50                                  DSPATR(RI)
+     A  50                                  DSPATR(PC)
+     A            REGNO     R        O  7  4EDTCDE(4)
+     A            KJNAME    R        O  7 10
+     A            KNNAME    R        O  7 33
+     A            GENDER    R        O  7 54DSPATR(&@SATR1)
+     A            BIRTHD    R        O  7 56EDTWRD('    /  /  ')
+     A            PREF      R        O  7 67
+      *
+     A            TEL       R        O  7 81
+     A  40                                  DSPATR(UL)
+     A  *DS3                            8 32
+      *
+     A            ADDR1     R        O  7 94
+     A  40                                  DSPATR(UL)
+     A  *DS3                            8 45
+      **************************************
+      * サブファイル制御レコード
+     A          R MEICTL                    SFLCTL(MEISFL)
+     A* 40                                  DSPMOD(*DS3)
+     A                                      OVERLAY
+     A                                      CA03(03 ' 終了 ')
+     A                                      CA12(12 ' 戻る ')
+     A                                      MOUBTN(*ULD ENTER)
+     A                                      SFLCSRRRN(&@SRRN)
+      *
+     A                                      SFLMODE(&@MODE)
+     A N66                                  SFLDROP(CF06)
+     A  66                                  SFLFOLD(CF06)
+      *
+     A  31                                  SFLDSPCTL
+     A  31                                  SFLDSP
+     A  32                                  SFLCLR
+     A  33                                  SFLEND(*SCRBAR)
+     A                                      SFLSIZ(&@SSIZE)
+     A  *DS4                                SFLPAG(0018)
+     A  *DS3                                SFLPAG(0008)
+      *
+     A          H
+     A  *DS4                                HLPARA(6 1 24 132)
+     A  *DS3                                HLPARA(6 1 22 80)
+     A                                      HLPRCD(HLPD1)
+     A                                      HLPBDY
+      *
+     A            @MODE          1A  H
+     A            @SRRN          5S 0H
+     A            @SSIZE         5S 0P
+     A            @SPLOC         4S 0H      SFLRCDNBR(CURSOR)
+      *
+      **************************************************************************
+      * フッター（機能キーガイド）
+      *   見出し→標識 60 オフ、一覧→標識 60 オン
+     A          R FOOTER
+     A* 40                                  DSPMOD(*DS3)
+      * F1 をクリックした時はすべてのヘルプを表示
+     A          H                           HLPARA(*RCD)
+     A                                      HLPRCD(HLPM1)
+     A          H                           HLPARA(*NONE)
+     A                                      HLPRCD(HLPD1)
+     A          H                           HLPARA(*NONE)
+     A                                      HLPRCD(HLPFOOT)
+     A                                      HLPBDY
+      *
+     A            PHELP          2Y 0B 26  2PSHBTNFLD
+     A  *DS3                           23  2
+     A                                      PSHBTNCHC(1 'F1=HELP' HELP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A N60        PEXIT          2Y 0B 26 13PSHBTNFLD
+     A  *DS3                           23 13
+     A                                      PSHBTNCHC(1 'F3= 終了 ' CA03)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  60        PCANCL         2Y 0B 26 13PSHBTNFLD
+     A  *DS3                           23 13
+     A                                      PSHBTNCHC(1 'F3/12= 戻る ' CA03)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A N60        PLIST          2Y 0B 26 29PSHBTNFLD
+     A  *DS3                           23 29
+     A                                      PSHBTNCHC(1 'F4= リスト ' CF04)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A N60        PENTER         2Y 0B 26 44PSHBTNFLD
+     A  *DS3                           23 44
+     A                                      PSHBTNCHC(1 'ENTER= 検索 ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  60        PPREV          2Y 0B 26 29PSHBTNFLD
+     A  *DS3                           23 29
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  60        PNEXT          2Y 0B 26 40PSHBTNFLD
+     A  *DS3                           23 40
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  40 60     PEXPAN         2Y 0B 26 51PSHBTNFLD
+     A  *DS3                           23 51
+     A  40                                  PSHBTNCHC(1 'F6= 行± ' CF06)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A  50        MSGDTA        78O  O 27  2DSPATR(HI)
+     A  *DS3                           24  2
+      **************************************************************************
+      * レコード詳細ウインドゥ
+     A          R SYOSAI
+     A                                      WINDOW(*DFT 15 65 *NOMSGLIN)
+     A* 40                                  DSPMOD(*DS3)
+     A                                      CA03(03 ' 終了 ')
+     A                                      WDWBORDER((*COLOR WHT) (*CHAR '...:-
+     A                                      ::.:'))
+     A                                      WDWTITLE((*TEXT ' ＊登録者詳細＊ ')-
+     A                                       (*COLOR WHT) (*DSPATR RI))
+     A                                      RMVWDW
+     A            @SATR1         1A  P
+     A            @SATR2         1A  P
+      *
+     A            CURLOC         1A  B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A                                  2  5' 登録№          :'
+     A                                      DSPATR(&@SATR1)
+     A            REGNO     R        O  2 24DSPATR(&@SATR2)
+     A                                      EDTCDE(4)
+      *
+     A                                  3  5' 姓名            :'
+     A                                      DSPATR(&@SATR1)
+     A            KJNAME    R        O  3 24DSPATR(&@SATR2)
+      *
+     A                                  4  5' 姓名（読み）    :'
+     A                                      DSPATR(&@SATR1)
+     A            KNNAME    R        O  4 24DSPATR(&@SATR2)
+      *
+     A                                  5  5' 性別            :'
+     A                                      DSPATR(&@SATR1)
+     A            GENDER    R        O  5 24DSPATR(&@SATR2)
+      *
+     A                                  6  5' 生年月日        :'
+     A                                      DSPATR(&@SATR1)
+     A            BIRTHD    R        O  6 24EDTWRD('    /  /  ')
+     A                                      DSPATR(&@SATR2)
+      *
+     A                                  7  5' 電話（主 / 副） :'
+     A                                      DSPATR(&@SATR1)
+     A            TEL       R        O  7 24DSPATR(&@SATR2)
+     A                                  7 37'/'
+     A                                      DSPATR(&@SATR1)
+     A            MOBILE    R        O  7 39DSPATR(&@SATR2)
+      *
+     A                                  8  5' 〒 / 都道府県   :'
+     A                                      DSPATR(&@SATR1)
+     A            POST      R        O  8 24DSPATR(&@SATR2)
+     A                                  8 33'/'
+     A                                      DSPATR(&@SATR1)
+     A            PREF      R        O  8 35DSPATR(&@SATR2)
+      *
+     A                                  9  5' 住所            :'
+     A                                      DSPATR(&@SATR1)
+     A            ADDR1     R        O  9 24DSPATR(&@SATR2)
+     A                                 10 22':'
+     A                                      DSPATR(&@SATR1)
+     A            ADDR2     R        O 10 24DSPATR(&@SATR2)
+     A                                 11 22':'
+     A                                      DSPATR(&@SATR1)
+     A            ADDR3     R        O 11 24DSPATR(&@SATR2)
+      *
+     A                                 12  5' 画像 :'
+     A                                      COLOR(TRQ)
+     A            URIIMG        50A  O 12 15COLOR(TRQ)
+      *
+     A                                 13  5' 地図 :'
+     A                                      COLOR(PNK)
+     A            URIWEB       100A  B 13 15CNTFLD(50)
+     A                                      COLOR(PNK)
+     A                                      DSPATR(PR)
+      *
+      * フッター（機能キーガイド―レコード詳細ウインドゥ）
+     A            PENTER         2Y 0B 15  2PSHBTNFLD
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      PSHBTNCHC(1 'ENTER= 次詳細 ')
+      *
+     A            PEXIT          2Y 0B 15 20PSHBTNFLD
+     A                                      CHCAVAIL((*COLOR BLU))
+     A                                      PSHBTNCHC(1 'F3= 終了 ' CA03)
+      *
+      **************************************************************************
+      * 画面罫線（水平線）
+     A          R HGRDR                     GRDRCD
+     A                                      GRDLIN( +
+     A                                      (*POS (&@HGSL &@HGSC &@HGLEN)) +
+     A                                      (*TYPE UPPER))
+     A            @HGSL          3S 0P
+     A            @HGSC          3S 0P
+     A            @HGLEN         3S 0P
+      **************************************
+      * 画面罫線（縦線）
+     A          R VGRDR                     GRDRCD
+     A                                      GRDLIN( +
+     A                                      (*POS (&@VGSL &@VGSC &@VGLEN)) +
+     A                                      (*TYPE LEFT))
+     A            @VGSL          3S 0P
+     A            @VGSC          3S 0P
+     A            @VGLEN         3S 0P
+      **************************************
+      * 画面罫線クリア
+     A          R CLRGRD                    GRDRCD
+     A                                      GRDCLR
+     A                                      FRCDTA
+      **************************************************************************
+      * ヘルプレコードでは条件付けは不可。
+      * 画面サイズの条件付けは可。
+      **************************************
+      * 見出しヘルプ情報
+     A          R HLPM1
+     A                                      HLPSEQ(HLPMGRP 1)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  6' 見出しのヘルプ（１／２） '
+     A                                      COLOR(WHT)
+     A                                  3  2' 登録者の読み（半角カナ）を '
+     A                                  4  2' 入力して実行キーを押すと '
+     A                                  5  2' 指定した文字列で始まるレコード '
+     A                                  6  2' を一覧表示します。 '
+     A                                  7  2' 入力がされていない、あるいは '
+     A                                  8  2' 該当するレコードが無い場合は '
+     A                                  9  2' メッセージ行にエラーが表示 '
+     A                                 10  2' されます。 '
+     A                                 12  2' F4 を押すとドロップダウンが '
+     A                                 13  2' 表示され、文字を選択できます。 '
+     A                                 14  2' 最大 100 件まで表示します。 '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+      **************************************
+     A          R HLPM2
+     A* 40                                  DSPMOD(*DS3)
+     A                                      HLPSEQ(HLPMGRP 2)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  6' 見出しのヘルプ（２／２） '
+     A                                      COLOR(WHT)
+     A                                  3  2' 詳細についてはリンクをクリック '
+     A                                  4  2' してください。 '
+     A                                  5  2' FILE://IBMI/LMS/TEBIKI.PDF '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      **************************************************************************
+      * 明細ヘルプ情報
+     A          R HLPD1
+     A* 40                                  DSPMOD(*DS3)
+     A                                      HLPSEQ(HLPDGRP 1)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  8' 明細のヘルプ（１／３） '
+     A                                      COLOR(WHT)
+     A                                  3  2' 明細画面は次ページ、前ページキー '
+     A                                  4  2' でスクロールができます。 '
+     A                                  6  2' オプションに ''5'' を入力して '
+     A                                  7  2' 実行すると、レコードの詳細が '
+     A                                  8  2' 表示されます。 '
+     A                                  9  2' 明細行にカーソルを合わせて '
+     A                                 10  2' 実行キーを押しても同様にレコード '
+     A                                 11  2' の詳細が表示がされます。 '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+      **************************************
+     A          R HLPD2
+     A* 40                                  DSPMOD(*DS3)
+     A                                      HLPSEQ(HLPDGRP 2)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  8' 明細のヘルプ（２／３） '
+     A                                      COLOR(WHT)
+     A                                  3  2' 【表示項目】 '
+     A                                      COLOR(BLU)
+     A                                  4  2' 登録番号：登録者固有の番号 '
+     A                                  5  2' 姓名：登録者の苗字と名前 '
+     A                                  6  2' 姓名（読み）：姓名のカナ表記 '
+     A                                  7  2' 電話番号（自宅／携帯）：連絡先 '
+     A                                  8  2' 郵便番号： 7 桁の郵便番号 '
+     A                                  9  2' 都道府県：国内 47 都道府県 '
+     A                                 10  2' 住所１～３：登録者の住所 '
+     A                                 11  2' 生年月日：西暦 4 桁と年月 '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+      **************************************
+     A          R HLPD3
+     A* 40                                  DSPMOD(*DS3)
+     A                                      HLPSEQ(HLPDGRP 3)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  8' 明細のヘルプ（３／３） '
+     A                                      COLOR(WHT)
+     A                                  3  2' 詳細についてはリンクをクリック '
+     A                                  4  2' してください。 '
+     A                                  5  2' FILE://IBMI/LMS/TEBIKI.PDF '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+      **************************************************************************
+      * フッターヘルプ情報
+     A          R HLPFOOT
+     A* 40                                  DSPMOD(*DS3)
+     A                                      HLPSEQ(HLPFGRP 1)
+     A                                      OVERLAY
+     A                                      WINDOW(5 26 17 38 *NOMSGLIN)
+     A                                      RMVWDW
+     A                                      WDWBORDER((*COLOR WHT)             -
+     A                                      (*CHAR '...:::.:'))
+      *
+     A                                  1  8' 機能キーのヘルプ '
+     A                                      COLOR(WHT)
+     A                                  3  2' 【機能キー】 '
+     A                                      COLOR(BLU)
+     A                                  4  2' F1 ：ヘルプウインドウの表示 '
+     A                                  5  2' F3 ：終了（前画面に戻る） '
+     A                                  6  2' F4 ：検索キーリストの表示 '
+     A                                  7  2' F6 ：単一／複数行表示切替 '
+     A                                  8  2'      （ 80 桁画面のみ有効） '
+     A                                  9  2' F7 ：前ページ '
+     A                                 10  2' F8 ：次ページ '
+     A                                 11  2' 実行：詳細表示 '
+     A                                 12  2'  ''5'' 入力時→指定行 '
+     A                                 13  2'  ''5'' 未入力時→カーソル行 '
+      *
+     A            CURLOC         1   B  1  2CHGINPDFT
+     A                                      DSPATR(ND)
+      *
+     A            PENTER         2Y 0B 17  2PSHBTNFLD
+     A                                      PSHBTNCHC(1 'ENTER= 戻る ' +
+     A                                      ENTER)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PPREV          2Y 0B 17 18PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F7= 前 ' ROLLDOWN)
+     A                                      CHCAVAIL((*COLOR BLU))
+      *
+     A            PNEXT          2Y 0B 17 29PSHBTNFLD
+     A                                      PSHBTNCHC(1 'F8= 次 ' ROLLUP)
+     A                                      CHCAVAIL((*COLOR BLU))

@@ -1,0 +1,111 @@
+     A* ファイルレベル・キーワード
+     A                                      REF(*LIBL/PERSON)
+     A* 見出し（検索キー入力）レコード
+     A          R MIDASI
+     A                                      OVERLAY
+     A                                      CA03(03 ' 終了 ')
+     A                                  1  2'INQDSPF'
+     A            PGMNAM        10A  O    +1COLOR(WHT)
+     A                                  1 63DATE
+     A                                      EDTCDE(Y)
+     A                                  1 72TIME
+     A                                  2 31' ＊＊登録者検索＊＊ '
+     A                                      DSPATR(HI)
+     A                                      DSPATR(RI)
+     A                                  4  4' 姓名（カナ）を入力 '
+     A            KEY       R     W  B  4 25REFFLD(KNNAME)
+     A  60                                  COLOR(PNK)
+     A N60                                  DSPATR(UL)
+     A  60                              4 53' 該当レコード数 '
+     A  60        RCDNUM         4Y 0O  4 70EDTCDE(J)
+     A                                      COLOR(PNK)
+     A* サブファイル・ヘッダー・レコード
+     A          R MEIHEAD
+     A                                      OVERLAY
+     A                                  6  5'NO'
+     A                                      COLOR(WHT)
+     A                                  6 11' 姓名 '
+     A                                      COLOR(WHT)
+     A                                  6 34' 読み '
+     A                                      COLOR(WHT)
+     A                                  6 54'S'
+     A                                      COLOR(WHT)
+     A                                  6 56' 生年月日 '
+     A                                      COLOR(WHT)
+     A                                  6 67' 都道府県 '
+     A                                      COLOR(WHT)
+     A* サブファイル・レコード
+     A          R MEISFL                    SFL
+     A  39                                  SFLNXTCHG
+     A            OPTION         1A  B  7  2
+     A  50                                  DSPATR(RI PC)
+     A            REGNO     R        O  7  4EDTCDE(4)
+     A            KJNAME    R        O  7 10
+     A            KNNAME    R        O  7 33
+     A            GENDER    R        O  7 54
+     A            BIRTHD    R        O  7 56EDTWRD('    /  /  ')
+     A            PREF      R        O  7 67
+      * サブファイル制御レコード
+     A          R MEICTL                    SFLCTL(MEISFL)
+     A                                      OVERLAY
+     A                                      PROTECT
+     A                                      CA03(03 ' 戻る ')
+     A  31                                  SFLDSPCTL
+     A  31                                  SFLDSP
+     A  32                                  SFLCLR
+     A  33                                  SFLEND(*MORE)
+     A                                      SFLSIZ(0016)
+     A                                      SFLPAG(0015)
+     A            DSPREC         4S 0H      SFLRCDNBR(CURSOR)
+      * 機能キーガイド（検索キー入力時）
+     A          R MIDASIF
+     A                                 23  2'F3= 終了 '
+     A                                      COLOR(BLU)
+     A                                 23 13'ENTER= 検索 '
+     A                                      COLOR(BLU)
+     A  50        MSGDTA        78O  O 24  2DSPATR(HI)
+      * 機能キーガイド（サブファイル表示時）
+     A          R MEISAIF
+     A                                 23  2'F3= 戻る '
+     A                                      COLOR(BLU)
+     A                                 23 13'PGUP= 前ページ '
+     A                                      COLOR(BLU)
+     A                                    +1'PGDN= 次ページ '
+     A                                      COLOR(BLU)
+     A  50        MSGDTA        78O  O 24  2DSPATR(HI)
+     A* レコード詳細画面
+     A          R SYOSAI
+     A                                  1  2'DSPF3'
+     A            PGMNAM        10A  O  1  8COLOR(WHT)
+     A                                  1 63DATE
+     A                                      EDTCDE(Y)
+     A                                  1 72TIME
+     A                                  3 31' ＊登録者情報詳細＊ '
+     A                                      DSPATR(HI RI)
+     A                                  6 17' 登録番号        :'
+     A            REGNO     R        O  6 36EDTCDE(4)
+     A                                  8 17' 姓名            :'
+     A            KJNAME    R        O  8 36
+     A                                  9 17' 姓名（読み）    :'
+     A            KNNAME    R        O  9 36
+     A                                 10 17' 性別            :'
+     A            GENDER    R        O 10 36
+     A                                 11 17' 生年月日        :'
+     A            BIRTHD    R        O 11 36EDTWRD('    /  /  ')
+     A                                 13 17' 電話（主 / 副） :'
+     A            TEL       R        O 13 36
+     A                                 13 49'/'
+     A            MOBILE    R        O 13 51
+     A                                 15 17' 〒 / 都道府県   :'
+     A            POST      R        O 15 36
+     A                                 15 45'/'
+     A            PREF      R        O 15 47
+     A                                 16 17' 住所            :'
+     A            ADDR1     R        O 16 36
+     A                                 17 34':'
+     A            ADDR2     R        O 17 36
+     A                                 18 34':'
+     A            ADDR3     R        O 18 36
+     A* 機能キーガイド
+     A                                 23  2'ENTER= 続行 '
+     A                                      COLOR(BLU)

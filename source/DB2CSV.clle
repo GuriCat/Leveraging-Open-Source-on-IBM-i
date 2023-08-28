@@ -1,0 +1,267 @@
+/* NetServer または FTP でアクセスできる IFS ディレクトリーがあることを確認   +
+/* 下記手順で PDM にオプションを追加。                                        +
+   1. STRPDM コマンドを実行                                                   +
+   2. "9. ユーザー定義オプションの処理 " を選択                               +
+   3. " 処理するオプション・ファイルの指定 " 画面でそのまま実行               +
+   4. F6 を押して " ユーザー定義オプションの作成 " 画面を表示                 +
+   5-1. " オプション " に "xx"(xx は NetServer 転送オプション ) を入力し、    +
+        " コマンド " に "CALL LMSExxLIB/DB2CSV PARM(&L &N N)" を入力して実行  +
+   5-2. " オプション " に "yy"(yy は FTP 転送オプション ) を入力し、          +
+        " コマンド " に "CALL LMSExxLIB/DB2CSV PARM(&L &N F)" を入力して実行  */
+
+             PGM        PARM(&LIBRARY &FILE &TFROPT)
+
+             /***********************************************************/
+             /* LMSEXXLIB に置き換え */
+             DCLF       FILE(LMSEXXLIB/DB2CSVD)
+             /***********************************************************/
+
+             DCL        VAR(&LIBRARY) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&FILE) TYPE(*CHAR) LEN(10)
+             DCL        VAR(&TFROPT) TYPE(*CHAR) LEN(1)
+
+             DCL        VAR(&JOBCCSID) TYPE(*DEC) LEN(5 0)
+             DCL        VAR(&DBFCCSID) TYPE(*DEC) LEN(5 0)
+             DCL        VAR(&DATETIME) TYPE(*CHAR) LEN(20)
+             DCL        VAR(&STMFPATH) TYPE(*CHAR) LEN(500)
+             DCL        VAR(&DBCSVPATH) TYPE(*CHAR) LEN(500)
+             DCL        VAR(&DBFFDPATH) TYPE(*CHAR) LEN(500)
+             DCL        VAR(&OUTXLSX) TYPE(*CHAR) LEN(500)
+             DCL        VAR(&CNVDTD_C) TYPE(*CHAR) LEN(1) VALUE(Y)
+             DCL        VAR(&CNVDTC_C) TYPE(*CHAR) LEN(1) VALUE(N)
+             DCL        VAR(&PARAMPATH) TYPE(*CHAR) LEN(500)
+             DCL        VAR(&QSHCMD) TYPE(*CHAR) LEN(500)
+
+             DCL        VAR(&POS) TYPE(*UINT)
+             DCL        VAR(&PATHSEP) TYPE(*CHAR) LEN(1)
+             DCL        VAR(&SEP) TYPE(*CHAR) LEN(1) VALUE(X'B2')
+
+             /***********************************************************/
+             /* 一時 CSV ファイルの保管場所を指定                            +
+                あらかじめ MKDIR コマンドでディレクトリーを作成しておくこと  +
+                例： MKDIR DIR('/TMP/LMSExx')                                */
+             DCL        VAR(&TOOLPATH) TYPE(*CHAR) LEN(64) +
+                          VALUE('/TMP/LMSEXX/')
+             /***********************************************************/
+             /* LMSExxLIB に置き換え */
+             DCL        VAR(&PGMLIB) TYPE(*CHAR) LEN(10) VALUE(LMSExxLIB)
+             /***********************************************************/
+             /* NetServer または FTP サーバーのホスト名または IP に置き換え */
+             DCL        VAR(&HOST) TYPE(*CHAR) LEN(64) +
+                          VALUE('IBMI')
+             /***********************************************************/
+             /* FTP サーバーにログインするユーザー ID とパスワード */
+             DCL        VAR(&USER) TYPE(*CHAR) LEN(10) VALUE(LMSEXX)
+             DCL        VAR(&PASS) TYPE(*CHAR) LEN(10) VALUE(LMSEXX)
+
+             MONMSG     MSGID(CPF0000 CPD0000 MCH0000) EXEC(GOTO +
+                          CMDLBL(ERROR))
+
+             CHGVAR     VAR(&LIBFILE) VALUE(&LIBRARY |< '/' |< &FILE)
+             RTVMBRD    FILE(&LIBRARY/&FILE) MBR(*FIRST) +
+                          TEXT(&FILETEXT) NBRCURRCD(&NBRCURRCD)
+
+             IF         COND(&NBRCURRCD = 0) THEN(DO)
+               SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) MSGDTA(&LIBFILE +
+                            |< +
+                            ' はレコードが 0 件のため変換できません。 '+
+                            ) MSGTYPE(*COMP)
+               GOTO       CMDLBL(EXIT)
+             ENDDO
+
+             /* デフォルト値のセット */
+             CHGVAR     VAR(&CNVDTD) VALUE(1)
+             CHGVAR     VAR(&CNVDTC) VALUE(0)
+             IF         COND(&NBRCURRCD < 10000) THEN(DO)
+               CHGVAR     VAR(&ROWNBR) VALUE(11) /* ウインドゥの行番号 */
+               CHGVAR     VAR(&COLNBR) VALUE(21)
+             ENDDO
+
+ EXFMT:      SNDRCVF    RCDFMT(CVTOPTR)
+
+             IF         COND(&IN03 = '1' | &IN12 = '1' | &CNVOPT = +
+                          3) THEN(DO)
+               SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                            MSGDTA(' データベースの変換が取り消されま +
+                             した。 ') MSGTYPE(*COMP)
+               GOTO       CMDLBL(EXIT)
+             ENDDO
+
+             IF         COND(&CNVOPT = 0) THEN(GOTO CMDLBL(EXFMT))
+
+             IF         COND(&CNVDTD = 0) THEN(CHGVAR VAR(&CNVDTD_C) +
+                          VALUE(N))
+             IF         COND(&CNVDTC = 1) THEN(CHGVAR VAR(&CNVDTC_C) +
+                          VALUE(Y))
+
+             SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' データベースの変換中 ...') +
+                          TOPGMQ(*EXT) MSGTYPE(*STATUS)
+
+             ADDLIBLE   LIB(&PGMLIB) POSITION(*LAST)
+             MONMSG     MSGID(CPF0000)
+             RTVJOBA    CCSID(&JOBCCSID) DATETIME(&DATETIME)
+
+             /* ファイルパスの設定 */
+             /* データ CSV */
+             CHGVAR     VAR(&DBCSVPATH) VALUE(&TOOLPATH |< &LIBRARY +
+                          |< '_' |< &FILE |< '_' |< &DATETIME |< +
+                          '.CSV')
+             /* FFD CSV */
+             CHGVAR     VAR(&DBFFDPATH) VALUE(&TOOLPATH |< &LIBRARY +
+                          |< '_' |< &FILE |< '_' |< &DATETIME |< +
+                          '_FFD.CSV')
+             /* xlsx キャプション */
+             CHGVAR     VAR(&OUTXLSX) VALUE(&LIBRARY |< '_' |< &FILE +
+                          |< '_' |< &DATETIME |< '.XLSX')
+             /* パラメーターファイル */
+             CHGVAR     VAR(&PARAMPATH) VALUE(&TOOLPATH |< &LIBRARY +
+                          |< '_' |< &FILE |< '_' |< &DATETIME |< +
+                          '.TXT')
+
+             IF         COND(&JOBCCSID = 5026 *OR &JOBCCSID = 65535) +
+                          THEN(CHGVAR VAR(&DBFCCSID) VALUE(5026))
+             IF         COND(&JOBCCSID = 5035 *OR &JOBCCSID = 1399) +
+                          THEN(CHGVAR VAR(&DBFCCSID) VALUE(&JOBCCSID))
+
+             /* データベースを CSV に変換 */
+             IF         COND(&CNVOPT = 1) THEN(DO)
+               DLTF       FILE(QTEMP/DB2CSVTEMP)
+               MONMSG     MSGID(CPF0000)
+               CPYF       FROMFILE(&LIBRARY/&FILE) +
+                            TOFILE(QTEMP/DB2CSVTEMP) MBROPT(*ADD) +
+                            CRTFILE(*YES) FROMRCD(1) TORCD(1000)
+               CPYTOIMPF  FROMFILE(QTEMP/DB2CSVTEMP) +
+                            TOSTMF(&DBCSVPATH) MBROPT(*REPLACE) +
+                            FROMCCSID(&DBFCCSID) STMFCCSID(943) +
+                            RCDDLM(*CRLF) RMVBLANK(*TRAILING)
+             ENDDO
+             ELSE       CMD(DO)
+               CPYTOIMPF  FROMFILE(&LIBRARY/&FILE) TOSTMF(&DBCSVPATH) +
+                            MBROPT(*REPLACE) FROMCCSID(&DBFCCSID) +
+                            STMFCCSID(943) RCDDLM(*CRLF) +
+                            RMVBLANK(*TRAILING)
+             ENDDO
+
+             /* ファイル・フィールド記述を CSV に変換 */
+             DSPFFD     FILE(&LIBRARY/&FILE) OUTPUT(*OUTFILE) +
+                          OUTFILE(QTEMP/DSPFFD)
+             CPYTOIMPF  FROMFILE(QTEMP/DSPFFD) TOSTMF(&DBFFDPATH) +
+                          MBROPT(*REPLACE) FROMCCSID(&DBFCCSID) +
+                          STMFCCSID(943) RCDDLM(*CRLF) +
+                          RMVBLANK(*TRAILING)
+
+             SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' データベースの変換が正常に終了し +
+                           ました。 ') MSGTYPE(*COMP)
+
+             /* サブルーチン：パラメーターファイルの作成 */
+             CALLSUBR   SUBR(#GENPARAM)
+
+             /* ファイルの権限の許可 */
+             CHGJOB     CCSID(5035)
+             CHGVAR     VAR(&QSHCMD) VALUE('chmod 666' |> &TOOLPATH +
+                          |< &LIBRARY |< '_' |< &FILE |< '_' |< +
+                          &DATETIME |< '*')
+             QSH        CMD(&QSHCMD)
+             CHGJOB     CCSID(&JOBCCSID)
+
+             CHGVAR     VAR(&STMFPATH) VALUE(&PARAMPATH)
+             /* "/" をパス区切り文字に置き換え */
+             CALLSUBR   SUBR(#RPLSEP)
+             CHGVAR     VAR(&PARAMPATH) VALUE(&STMFPATH)
+
+             STRPCO     PCTA(*NO)
+             MONMSG     MSGID(IWS0000)
+
+             IF         COND(&JOBCCSID = 5026 *OR &JOBCCSID = 65535) +
+                          THEN(CHGJOB CCSID(5026))
+             ELSE       CMD(CHGJOB CCSID(5035))
+             /* データ転送と Excel VBA 処理 */
+             /* NetServer ：                                                  +
+                パラメーターファイルを Windows の %temp% ディレクトリーに     +
+                コピーしてデスクトップの Excel を起動                         */
+             IF         COND(&TFROPT = 'N') THEN(STRPCCMD +
+                          PCCMD('COPY /Y' |> &SEP || &SEP |< &HOST +
+                          |< &PARAMPATH |> '%TEMP%' || &SEP || +
+                          'DB2EXCEL_PARAM.TXT & START +
+                          %USERPROFILE%' || &SEP || 'DESKTOP' || +
+                          &SEP || 'DB2EXCEL.XLSM') PAUSE(*NO))
+             /* FTP ：                                                        +
+                Windows デスクトップのバッチを呼出して FTP でファイルを       +
+                %temp% にコピーし、デスクトップの Excel を起動                */
+             IF         COND(&TFROPT = 'F') THEN(STRPCCMD +
+                          PCCMD('START %USERPROFILE%' |< &SEP |< +
+                          'DESKTOP' |< &SEP |< 'DB2EXCEL.CMD' |> +
+                          &TOOLPATH |> &LIBRARY |< '_' |< &FILE |< +
+                          '_' |< &DATETIME |> &HOST |> &USER |> +
+                          &PASS) PAUSE(*NO))
+             CHGJOB     CCSID(&JOBCCSID)
+             GOTO       CMDLBL(CLEANUP)
+
+ ERROR:      SNDPGMMSG  MSGID(CPF9897) MSGF(QCPFMSG) +
+                          MSGDTA(' データベースの変換でエラーが発生 +
+                           しました。詳細はジョブログを参照してくだ +
+                           さい。 ') MSGTYPE(*ESCAPE)
+
+ CLEANUP:    CHGJOB     CCSID(&JOBCCSID)
+             MONMSG     MSGID(CPF0000)
+             GOTO       CMDLBL(EXIT)
+
+             /***********************************************************/
+             /* サブルーチン                                            */
+
+             /* サブルーチン：パラメーターファイルの作成 */
+             SUBR       SUBR(#GENPARAM)
+
+               CHGJOB     CCSID(5035)
+               CHGVAR     VAR(&QSHCMD) VALUE('touch -C 943' |> +
+                            &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+
+               /* "/" をパス区切り文字に置き換え */
+               CHGVAR     VAR(&STMFPATH) VALUE(&DBCSVPATH)
+               CALLSUBR   SUBR(#RPLSEP)
+               CHGVAR     VAR(&DBCSVPATH) VALUE(&STMFPATH)
+               CHGVAR     VAR(&STMFPATH) VALUE(&DBFFDPATH)
+               CALLSUBR   SUBR(#RPLSEP)
+               CHGVAR     VAR(&DBFFDPATH) VALUE(&STMFPATH)
+
+               /* パラメーターファイルへの書き出し */
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &TFROPT |< +
+                            ''' >>' |> &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &SEP |< &SEP +
+                            |< &HOST |< &DBCSVPATH |< ''' >>' |> +
+                            &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &SEP |< &SEP +
+                            |< &HOST |< &DBFFDPATH |< ''' >>' |> +
+                            &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &OUTXLSX |< +
+                            ''' >>' |> &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &CNVDTD_C |< +
+                            ''' >>' |> &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGVAR     VAR(&QSHCMD) VALUE('echo ''' |< &CNVDTC_C |< +
+                            ''' >>' |> &PARAMPATH)
+               QSH        CMD(&QSHCMD)
+               CHGJOB     CCSID(&JOBCCSID)
+
+             ENDSUBR
+
+             /* サブルーチン：パス区切り文字 "/" の置き換え */
+             SUBR       SUBR(#RPLSEP)
+
+               DOFOR      VAR(&POS) FROM(1) TO(500)
+                 CHGVAR     VAR(&PATHSEP) VALUE(%SST(&STMFPATH &POS 1))
+                 IF         COND(&PATHSEP = ' ') THEN(LEAVE)
+                 IF         COND(&PATHSEP = '/') THEN(CHGVAR +
+                              VAR(%SST(&STMFPATH &POS 1)) VALUE(&SEP))
+               ENDDO
+
+             ENDSUBR
+
+ EXIT:       ENDPGM
