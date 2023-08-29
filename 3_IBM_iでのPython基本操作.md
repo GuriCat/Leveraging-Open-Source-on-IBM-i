@@ -23,7 +23,7 @@
 
 Pythonを実行する前に、インストール状況と実行環境を確認しましょう。2023年1月時点でIBM iで利用できるPythonには下記バージョンがあります。
 
-?> Pythonのリリース・サイクルはhttps://devguide.python.org/versions/#versionsなどを参照。
+?> Pythonのリリース・サイクルは https://devguide.python.org/versions/#versions などを参照。
 
 |バージョン|Pythonバイナリー|備考|
 |---------|---------------|----|
