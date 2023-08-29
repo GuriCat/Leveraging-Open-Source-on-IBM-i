@@ -1,0 +1,17 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@4.17.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+<div class="vega-visualization" id="vega-visualization-240b884846384a10a2bd8906f03bb808"></div>
+<script type="text/javascript">
+  const spec = {"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}, "background": "#DDEEFF", "title": {"fontSize": 24}}, "data": {"url": "https://raw.githubusercontent.com/niiyz/JapanCityGeoJson/master/topojson/custom/tokyo23.topojson", "format": {"feature": "tokyo23", "type": "topojson"}}, "mark": {"type": "geoshape", "stroke": "pink", "strokeWidth": 1}, "encoding": {"color": {"field": "TKNURI", "legend": {"title": "\u5f53\u5e74\u5ea6\u58f2\u4e0a\u9ad8"}, "scale": {"scheme": "yellowgreenblue"}, "type": "quantitative"}, "tooltip": [{"field": "properties.N03_004", "title": "\u533a", "type": "nominal"}, {"field": "properties.N03_007", "title": "\u56e3\u4f53\u30b3\u30fc\u30c9", "type": "nominal"}, {"field": "TKNURI", "format": ",", "title": "\u5f53\u5e74\u5ea6\u58f2\u4e0a\u9ad8", "type": "quantitative"}]}, "height": 600, "title": "\u5f53\u5e74\u58f2\u4e0a\u9ad8\uff08\u6771\u4eac\uff12\uff13\u533a\uff09", "transform": [{"lookup": "properties.N03_007", "from": {"data": {"name": "data-ac23ea1bba37afa8ac3724bb39e6a073"}, "key": "mapCode", "fields": ["TKNURI"]}}], "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-ac23ea1bba37afa8ac3724bb39e6a073": [{"mapCode": "00000", "TKNURI": 60246500.0}, {"mapCode": "13101", "TKNURI": 55599500.0}, {"mapCode": "13102", "TKNURI": 85828200.0}, {"mapCode": "13103", "TKNURI": 57184800.0}, {"mapCode": "13104", "TKNURI": 87437100.0}, {"mapCode": "13105", "TKNURI": 72803100.0}, {"mapCode": "13106", "TKNURI": 55181500.0}, {"mapCode": "13107", "TKNURI": 22877800.0}, {"mapCode": "13108", "TKNURI": 52381500.0}, {"mapCode": "13109", "TKNURI": 67259100.0}, {"mapCode": "13110", "TKNURI": 55886200.0}, {"mapCode": "13111", "TKNURI": 48098400.0}, {"mapCode": "13112", "TKNURI": 74559200.0}, {"mapCode": "13113", "TKNURI": 47912500.0}, {"mapCode": "13114", "TKNURI": 40640500.0}, {"mapCode": "13115", "TKNURI": 73339600.0}, {"mapCode": "13116", "TKNURI": 53541400.0}, {"mapCode": "13117", "TKNURI": 57517400.0}, {"mapCode": "13118", "TKNURI": 85558100.0}, {"mapCode": "13119", "TKNURI": 58483300.0}, {"mapCode": "13120", "TKNURI": 67979300.0}, {"mapCode": "13121", "TKNURI": 39124100.0}, {"mapCode": "13122", "TKNURI": 64233700.0}, {"mapCode": "13123", "TKNURI": 67115900.0}]}};
+  const embedOpt = {};
+  vegaEmbed('#vega-visualization-240b884846384a10a2bd8906f03bb808', spec, embedOpt).catch(console.error);
+</script>
+</body>
+</html>

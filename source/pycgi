@@ -1,0 +1,3 @@
+#!/QOpenSys/pkgs/bin/python
+import os
+os.execlp(os.environ['PATH_TRANSLATED'], 'argv')
