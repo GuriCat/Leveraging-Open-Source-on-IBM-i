@@ -979,6 +979,7 @@ IBMはPASEをQshellの子プロセスとして起動する方法を推奨して�
 IBM iのOPM/ILE言語とPythonなどPASE環境で稼働する言語間で連携を行う際にはいくつか考慮点があります。下表は「OSS(Python)⇔CL/RPGの相互呼出し」の手法と呼び出し先が情報を返す方法の例を示しています。
 
 |呼び出し|手法|呼び出し先からの情報|
+|--------|----|---------------------|
 |PythonからCL/RPGを呼び出し|Ⓐ PythonのsubprocessでCLコマンドを実行|Pythonの標準出力|
 ||Ⓑ pyodbcのSQLからQCMDEXCスカラー関数 でCLコマンドを実行|コマンドの成否|
 ||Ⓒ「itoolkit for Python」でプログラム呼出し|パラメーター変数|
