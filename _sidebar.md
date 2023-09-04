@@ -1,8 +1,8 @@
 <!-- docs/_sidebar.md -->
 
-IBM iでオープンソース活用<br>ハンズオンの手引き
+* IBM iでオープンソース活用<br>ハンズオンの手引き
 
-![ぐり](/files/guri.jfif")
+* ![ぐり](/files/guri.jfif")
 
 * [はじめに](/)
 * [1 事前準備](/1_事前準備.md)
