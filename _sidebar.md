@@ -1,6 +1,6 @@
 <!-- docs/_sidebar.md -->
 
-* **IBM iでオープンソース活用<br>ハンズオンの手引き**
+* <cneter><b>IBM iでオープンソース活用<br>ハンズオンの手引き**</b></center>
 
 * ![ぐり](/files/guri.jfif")
 
