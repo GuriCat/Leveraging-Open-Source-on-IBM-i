@@ -291,14 +291,13 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 ### 4.2.2 コロプレスマップ(Altair)
 
-
 次に可視化パッケージAltairでコロプレスマップを作成します。
 
 ?> Choropleth map(階級区分図)。統計数値に合わせて複数の領域を色調を変えて塗り分けた図。
 
 <u>**Live Graph**</u>
 
-[map_altair](source/map_altair.html ':include :type=iframe width=80% height=600px')
+[map_altair](source/map_altair.html ':include :type=iframe width=1200% height=400px')
 
 <br>
 
@@ -405,11 +404,7 @@ altair-viewer      0.4.0
 
 明確なドキュメントは見つけられませんでしたが、地形情報(TopoJSON)とAltairの指定の関連は下図のように推測されます。
 
-<br>
-
-<u>**Live Graph**</u>
-
-[map_folium](source/map_folium.html ':include :type=iframe width=80% height=600px')
+![4.2.2_コロプレスマップ2.jpg](/files/4.2.2_コロプレスマップ2.jpg)
 
 国別、県別、行政区別など各種の地形情報が利用可能であり、ニーズに合わせたコロプレスマップが作成できるでしょう。
 
@@ -423,7 +418,11 @@ altair-viewer      0.4.0
 
 ?> ここでは国土地理院のAPIを利用。**公開サーバーには負荷をかけないように十分に留意**すること。
 
-![4.2.3_マーカー付き地図.jpg](/files/4.2.3_マーカー付き地図.jpg)
+<br>
+
+<u>**Live Graph**</u>
+
+[map_folium](source/map_folium.html ':include :type=iframe width=80% height=600px')
 
 外部サーバーのAPIを利用して住所から緯度/経度を取得し、地図の上にマーカーを描画します。マーカーをクリックするとポップアップが表示され、詳細情報を確認できます。
 
