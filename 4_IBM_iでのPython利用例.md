@@ -295,9 +295,9 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 ?> Choropleth map(階級区分図)。統計数値に合わせて複数の領域を色調を変えて塗り分けた図。
 
-<u>**Live Graph**</u>
+![4.2.2_コロプレスマップ.jpg](/files/4.2.2_コロプレスマップ.jpg)
 
-[map_altair](source/map_altair.html ':include :type=iframe width=250% height=600px')
+[**Live Graph**](source/map_altair.html ':include :type=iframe'){:target="_blank"}
 
 <br>
 
