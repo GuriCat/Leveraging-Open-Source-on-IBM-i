@@ -221,6 +221,9 @@ Plotlyは高機能な可視化パッケージですが、一般的なグラフ�
 
 {% include_relative files/barChart.html %}
 
+[cinwell website](https://cinwell.com ':include :type=iframe width=100% height=400px')
+
+
 [barChart](/files/barChart.html) ':include :type=iframe width=100% height=400px')
 
 <br>
