@@ -220,9 +220,9 @@ Plotlyは高機能な可視化パッケージですが、一般的なグラフ�
 ![4.2.1_シンプルなグラフ.jpg](/files/4.2.1_シンプルなグラフ.jpg)
 
 
-[barChart](source/barChart.html) ':include :type=iframe width=100% height=400px')
+[barChart](source/barChart.html ':include :type=iframe width=100% height=400px')
 
-[barChart]([/source/barChart.html](https://guricat.github.io/Leveraging-Open-Source-on-IBM-i/source/barChart.html)) ':include :type=iframe width=100% height=400px')
+[barChart](https://guricat.github.io/Leveraging-Open-Source-on-IBM-i/source/barChart.html ':include :type=iframe width=100% height=400px')
 
 
 
