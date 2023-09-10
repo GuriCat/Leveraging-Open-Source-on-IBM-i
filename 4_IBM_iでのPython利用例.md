@@ -297,7 +297,7 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 ![4.2.2_コロプレスマップ.jpg](/files/4.2.2_コロプレスマップ.jpg)
 
-[**Live Graph**](source/map_altair.html ':include :type=iframe'){:target="_blank"}
+[**Live Graph**](source/map_altair.html){:target="_blank"}
 
 <br>
 
