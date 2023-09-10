@@ -219,7 +219,7 @@ Plotlyは高機能な可視化パッケージですが、一般的なグラフ�
 
 ![4.2.1_シンプルなグラフ.jpg](/files/4.2.1_シンプルなグラフ.jpg)
 
-[barChart](files/barChart.html ':include :type=html')
+[barChart](/files/barChart.html ':include :type=html')
 
 [barChart](files/barChart.html ':include :type=iframe width=100% height=650px')
 
