@@ -297,7 +297,7 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 <u>**Live Graph**</u>
 
-[map_altair](source/map_altair.html ':include :type=iframe width=1200% height=400px')
+[map_altair](source/map_altair.html ':include :type=iframe width=100% height=800px')
 
 <br>
 
@@ -422,7 +422,7 @@ altair-viewer      0.4.0
 
 <u>**Live Graph**</u>
 
-[map_folium](source/map_folium.html ':include :type=iframe width=80% height=600px')
+[map_folium](source/map_folium.html ':include :type=iframe width=100% height=800px')
 
 外部サーバーのAPIを利用して住所から緯度/経度を取得し、地図の上にマーカーを描画します。マーカーをクリックするとポップアップが表示され、詳細情報を確認できます。
 
