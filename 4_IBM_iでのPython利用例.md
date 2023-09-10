@@ -221,13 +221,13 @@ Plotlyは高機能な可視化パッケージですが、一般的なグラフ�
 
 **棒グラフ**
 
-[barChart](source/barChart.html ':include :type=iframe width=100% height=400px')
+[barChart](source/barChart.html ':include :type=iframe width=80% height=500px')
 
 <br>
 
 **円グラフ**
 
-[pieChart](source/pieChart.html ':include :type=iframe width=100% height=400px')
+[pieChart](source/pieChart.html ':include :type=iframe width=80% height=500px')
 
 <br>
 
@@ -298,7 +298,7 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 <u>**Live Graph**</u>
 
-[map_altair](source/map_altair.html ':include :type=iframe width=100% height=400px')
+[map_altair](source/map_altair.html ':include :type=iframe width=80% height=600px')
 
 <br>
 
@@ -409,7 +409,7 @@ altair-viewer      0.4.0
 
 <u>**Live Graph**</u>
 
-[map_folium](source/map_folium.html ':include :type=iframe width=100% height=400px')
+[map_folium](source/map_folium.html ':include :type=iframe width=80% height=600px')
 
 国別、県別、行政区別など各種の地形情報が利用可能であり、ニーズに合わせたコロプレスマップが作成できるでしょう。
 
