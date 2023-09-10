@@ -297,7 +297,7 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 <u>**Live Graph**</u>
 
-[map_altair](source/map_altair.html ':include :type=iframe width=100% height=800px')
+[map_altair](source/map_altair.html ':include :type=iframe width=50% height=800px')
 
 <br>
 
