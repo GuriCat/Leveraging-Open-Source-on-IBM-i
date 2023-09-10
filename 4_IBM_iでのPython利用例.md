@@ -217,14 +217,17 @@ Google Trends (https://trends.google.co.jp/trends/?geo=JP )によると、Python
 
 Plotlyは高機能な可視化パッケージですが、一般的なグラフをクイックに作成する「Plotly Express」が含まれています。これを利用してDb2 for iのデータを容易に下記のようなグラフにできます。
 
-![4.2.1_シンプルなグラフ.jpg](/files/4.2.1_シンプルなグラフ.jpg)
+<u>**Live Graph**</u>
 
+**棒グラフ**
 
 [barChart](source/barChart.html ':include :type=iframe width=100% height=400px')
 
-[barChart](https://guricat.github.io/Leveraging-Open-Source-on-IBM-i/source/barChart.html ':include :type=iframe width=100% height=400px')
+<br>
 
+**円グラフ**
 
+[pieChart](source/pieChart.html ':include :type=iframe width=100% height=400px')
 
 <br>
 
@@ -293,7 +296,11 @@ Successfully installed plotly-5.12.0 tenacity-8.1.0
 
 ?> Choropleth map(階級区分図)。統計数値に合わせて複数の領域を色調を変えて塗り分けた図。
 
-![4.2.2_コロプレスマップ.jpg](/files/4.2.2_コロプレスマップ.jpg)
+<u>**Live Graph**</u>
+
+[map_altair](source/map_altair.html ':include :type=iframe width=100% height=400px')
+
+<br>
 
 コロプレスマップを利用すれば、地図を領域で塗り分けて、分布の状況を直感的に把握できるようになります。作例はIBM i上の得意先マスターのデータを利用し、区ごとに集計した売上高(金額)で23区を塗り分けています。
 
@@ -398,7 +405,11 @@ altair-viewer      0.4.0
 
 明確なドキュメントは見つけられませんでしたが、地形情報(TopoJSON)とAltairの指定の関連は下図のように推測されます。
 
-![4.2.2_コロプレスマップ2.jpg](/files/4.2.2_コロプレスマップ2.jpg)
+<br>
+
+<u>**Live Graph**</u>
+
+[map_folium](source/map_folium.html ':include :type=iframe width=100% height=400px')
 
 国別、県別、行政区別など各種の地形情報が利用可能であり、ニーズに合わせたコロプレスマップが作成できるでしょう。
 
