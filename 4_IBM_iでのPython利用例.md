@@ -217,8 +217,6 @@ Google Trends (https://trends.google.co.jp/trends/?geo=JP )によると、Python
 
 Plotlyは高機能な可視化パッケージですが、一般的なグラフをクイックに作成する「Plotly Express」が含まれています。これを利用してDb2 for iのデータを容易に下記のようなグラフにできます。
 
-<u>**Live Graph**</u>
-
 **棒グラフ**
 
 [barChart](source/barChart.html ':include :type=iframe width=80% height=500px')
@@ -418,11 +416,9 @@ altair-viewer      0.4.0
 
 ?> ここでは国土地理院のAPIを利用。**公開サーバーには負荷をかけないように十分に留意**すること。
 
-<br>
+![4.2.3_マーカー付き地図.jpg](/files/4.2.3_マーカー付き地図.jpg)
 
-<u>**Live Graph**</u>
-
-[map_folium](source/map_folium.html ':include :type=iframe width=100% height=800px')
+<a href="https://guricat.github.io/Leveraging-Open-Source-on-IBM-i/source/map_folium.html" target="_blank">**Live Graph**</a>
 
 外部サーバーのAPIを利用して住所から緯度/経度を取得し、地図の上にマーカーを描画します。マーカーをクリックするとポップアップが表示され、詳細情報を確認できます。
 
